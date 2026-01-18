@@ -98,6 +98,13 @@ const GameMenu = () => {
   const [resultPopupDismissed, setResultPopupDismissed] = useState(false);
   const [pairType, setPairType] = useState<string>("");
   const [showPairPopup, setShowPairPopup] = useState(false);
+  const [optimisticHide, setOptimisticHide] = useState(false);
+
+  useEffect(() => {
+    if (gameState) {
+      setOptimisticHide(false);
+    }
+  }, [gameState]);
   const [shownPairCards, setShownPairCards] = useState<string>("");
 
   useEffect(() => {
@@ -1063,9 +1070,11 @@ const GameMenu = () => {
                                   gameState.players.player2.split2_status ===
                                   0) &&
                                 !gameState.players.player2.hands[0]
-                                  .live_function_hand && (
+                                  .live_function_hand &&
+                                !optimisticHide && (
                                   <button
                                     onClick={() => {
+                                      setOptimisticHide(true);
                                       sendWebSocketMessage({
                                         action: "set_live_function_hand",
                                         player_id: "player2",
@@ -1105,10 +1114,12 @@ const GameMenu = () => {
                                     gameState.players.player2.hands[0]?.cards
                                       ?.length === 2 &&
                                     gameState.players.player2.insurence ===
-                                    0 && (
+                                    0 &&
+                                    !optimisticHide && (
                                       <>
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             if (gameState?.mode === "live") {
                                               handleInsurance("player2");
                                             }
@@ -1125,6 +1136,7 @@ const GameMenu = () => {
                                         </button>
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             sendWebSocketMessage({
                                               action: "no_for_player_insurence",
                                               player_id: "player2",
@@ -1149,10 +1161,12 @@ const GameMenu = () => {
                                     gameState.players.player2.hands[0]
                                       ?.total === 21 &&
                                     gameState.players.player2.even_money ===
-                                    0 && (
+                                    0 &&
+                                    !optimisticHide && (
                                       <>
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             sendWebSocketMessage({
                                               action:
                                                 "yes_for_player_even_money",
@@ -1165,6 +1179,7 @@ const GameMenu = () => {
                                         </button>
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             sendWebSocketMessage({
                                               action:
                                                 "no_for_player_even_money",
@@ -1184,10 +1199,12 @@ const GameMenu = () => {
                                     gameState?.dealer?.cards?.[0]?.[0] !==
                                     "A" &&
                                     gameState.players.player2.surrender ===
-                                    0 && (
+                                    0 &&
+                                    !optimisticHide && (
                                       <>
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             sendWebSocketMessage({
                                               action: "surrender_player",
                                               player_id: "player2",
@@ -1205,6 +1222,7 @@ const GameMenu = () => {
                                         </button>
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             sendWebSocketMessage({
                                               action: "no_for_player_surrender",
                                               player_id: "player2",
@@ -1225,10 +1243,12 @@ const GameMenu = () => {
                                     ) &&
                                     gameState?.current_player === "player2" &&
                                     !gameState.players.player2.hands[0]
-                                      .live_function_hand && (
+                                      .live_function_hand &&
+                                    !optimisticHide && (
                                       <>
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             sendWebSocketMessage({
                                               action: "set_live_function_hand",
                                               player_id: "player2",
@@ -1255,6 +1275,7 @@ const GameMenu = () => {
                                           ?.cards?.length === 2 && (
                                             <button
                                               onClick={() => {
+                                                setOptimisticHide(true);
                                                 sendWebSocketMessage({
                                                   action: "set_live_function_hand",
                                                   player_id: "player2",
@@ -1280,6 +1301,7 @@ const GameMenu = () => {
                                           )}
                                         <button
                                           onClick={() => {
+                                            setOptimisticHide(true);
                                             sendWebSocketMessage({
                                               action: "set_live_function_hand",
                                               player_id: "player2",
