@@ -150,14 +150,10 @@ const GameMenu = () => {
 
         switch (data.action) {
           case "player_activated":
-            setPopupMessage(data.message);
-            setShowPopup(true);
-            setTimeout(() => setShowPopup(false), 1000);
+            // Notification removed
             break;
           case "player_removed":
-            setPopupMessage(data.message);
-            setShowPopup(true);
-            setTimeout(() => setShowPopup(false), 1000);
+            // Notification removed
             break;
           case "turn_updated":
             setIsDealerSelected(data.current_turn === "dealer");
@@ -899,21 +895,30 @@ const GameMenu = () => {
                           <div
                             className={`rounded-xl p-4 relative ${getHandBoxColor(
                               isHandSelected(gameState, "player3", 0, 0) &&
-                                gameState?.current_player === "player3",
+                              gameState?.current_player === "player3",
                               gameState.players.player3.status === 1,
                               gameState.players.player3.hands[0]?.result
                             )}`}
                           >
                             <div className="text-left mb-1">
                               <div
-                                className={`text-lg font-medium ${
-                                  isHandSelected(gameState, "player3", 0, 0)
-                                    ? "text-gray-950"
-                                    : "text-white"
-                                }`}
+                                className={`text-lg font-medium ${isHandSelected(gameState, "player3", 0, 0)
+                                  ? "text-gray-950"
+                                  : "text-white"
+                                  }`}
                               >
                                 Main Hand
                               </div>
+                              {gameState.players.player3.hands[0]?.live_function_hand &&
+                                !["insurence", "surrender"].includes(
+                                  gameState.players.player3.hands[0].live_function_hand
+                                ) && (
+                                  <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                                    <span className="text-5xl font-extrabold text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] animate-pulse tracking-widest bg-black/60 px-6 py-3 rounded-xl border-4 border-yellow-500 backdrop-blur-sm">
+                                      {gameState.players.player3.hands[0].live_function_hand.toUpperCase()}
+                                    </span>
+                                  </div>
+                                )}
                             </div>
                             <div className="flex justify-center items-center gap-4 mb-4">
                               {gameState.players.player3.hands[0]?.cards?.map(
@@ -942,8 +947,8 @@ const GameMenu = () => {
                                     Math.max(
                                       0,
                                       2 -
-                                        (gameState.players.player3.hands[0]
-                                          ?.cards?.length ?? 0)
+                                      (gameState.players.player3.hands[0]
+                                        ?.cards?.length ?? 0)
                                     )
                                   ),
                                 ].map((_, index) => (
@@ -964,7 +969,7 @@ const GameMenu = () => {
                             )}
 
                             {/* Action Buttons */}
-                            <div className="flex justify-center gap-2 flex-wrap mt-2 mb-4">
+                            <div className="flex justify-center gap-4 flex-wrap mt-2 mb-4">
                               {gameState?.round_number !== 0 &&
                                 isHandSelected(gameState, "player3", 0, 0) &&
                                 gameState?.current_player === "player3" &&
@@ -974,22 +979,22 @@ const GameMenu = () => {
                                   gameState.players.player3.hands[0].cards
                                 ) &&
                                 gameState.players.player3.hands[0].status ===
-                                  "playing" &&
+                                "playing" &&
                                 (gameState.players.player3.split1_status ===
                                   0 ||
                                   gameState.players.player3.split2_status ===
-                                    0) && (
+                                  0) &&
+                                !gameState.players.player3.hands[0]
+                                  .live_function_hand && (
                                   <button
                                     onClick={() => {
-                                      if (gameState?.mode === "live") {
-                                        sendWebSocketMessage({
-                                          action: "set_live_function_hand",
-                                          player_id: "player3",
-                                          split_level: 0,
-                                          hand_index: 0,
-                                          value: "Split",
-                                        });
-                                      }
+                                      sendWebSocketMessage({
+                                        action: "set_live_function_hand",
+                                        player_id: "player3",
+                                        split_level: 0,
+                                        hand_index: 0,
+                                        value: "Split",
+                                      });
                                       if (
                                         gameState?.mode === "auto" ||
                                         gameState?.mode === "manual"
@@ -1014,28 +1019,20 @@ const GameMenu = () => {
                                     !gameState.players.player3.hands[0]
                                       .insurence &&
                                     gameState.players.player3.split1_status ===
-                                      0 &&
+                                    0 &&
                                     gameState.players.player3.split2_status ===
-                                      0 &&
+                                    0 &&
                                     gameState.players.player3.hands[0]
                                       ?.total !== 21 &&
                                     gameState.players.player3.hands[0]?.cards
                                       ?.length === 2 &&
                                     gameState.players.player3.insurence ===
-                                      0 && (
+                                    0 && (
                                       <>
                                         <button
                                           onClick={() => {
                                             if (gameState?.mode === "live") {
                                               handleInsurance("player3");
-                                              sendWebSocketMessage({
-                                                action:
-                                                  "set_live_function_hand",
-                                                player_id: "player3",
-                                                split_level: 0,
-                                                hand_index: 0,
-                                                value: "insurence",
-                                              });
                                             }
                                             if (
                                               gameState?.mode === "auto" ||
@@ -1064,17 +1061,17 @@ const GameMenu = () => {
                                   {/* Even Money Button: Only show if dealer's first card is Ace, hand has 2 cards, total is 21, and even money not taken */}
                                   {gameState?.round_number !== 0 &&
                                     gameState?.dealer?.cards?.[0]?.[0] ===
-                                      "A" &&
+                                    "A" &&
                                     gameState.players.player3.split1_status ===
-                                      0 &&
+                                    0 &&
                                     gameState.players.player3.split2_status ===
-                                      0 &&
+                                    0 &&
                                     gameState.players.player3.hands[0]?.cards
                                       ?.length === 2 &&
                                     gameState.players.player3.hands[0]
                                       ?.total === 21 &&
                                     gameState.players.player3.even_money ===
-                                      0 && (
+                                    0 && (
                                       <>
                                         <button
                                           onClick={() => {
@@ -1107,9 +1104,9 @@ const GameMenu = () => {
                                     gameState?.players?.player3?.hands[0]?.cards
                                       ?.length === 2 &&
                                     gameState?.dealer?.cards?.[0]?.[0] !==
-                                      "A" &&
+                                    "A" &&
                                     gameState.players.player3.surrender ===
-                                      0 && (
+                                    0 && (
                                       <>
                                         <button
                                           onClick={() => {
@@ -1148,20 +1145,19 @@ const GameMenu = () => {
                                       0,
                                       0
                                     ) &&
-                                    gameState?.current_player === "player3" && (
+                                    gameState?.current_player === "player3" &&
+                                    !gameState.players.player3.hands[0]
+                                      .live_function_hand && (
                                       <>
                                         <button
                                           onClick={() => {
-                                            if (gameState?.mode === "live") {
-                                              sendWebSocketMessage({
-                                                action:
-                                                  "set_live_function_hand",
-                                                player_id: "player3",
-                                                split_level: 0,
-                                                hand_index: 0,
-                                                value: "Hit",
-                                              });
-                                            }
+                                            sendWebSocketMessage({
+                                              action: "set_live_function_hand",
+                                              player_id: "player3",
+                                              split_level: 0,
+                                              hand_index: 0,
+                                              value: "Hit",
+                                            });
                                             sendWebSocketMessage({
                                               action: "hit_player",
                                               player_id: "player3",
@@ -1179,46 +1175,40 @@ const GameMenu = () => {
                                         </button>
                                         {gameState.players.player3.hands[0]
                                           ?.cards?.length === 2 && (
-                                          <button
-                                            onClick={() => {
-                                              if (gameState?.mode === "live") {
+                                            <button
+                                              onClick={() => {
                                                 sendWebSocketMessage({
-                                                  action:
-                                                    "set_live_function_hand",
+                                                  action: "set_live_function_hand",
                                                   player_id: "player3",
                                                   split_level: 0,
                                                   hand_index: 0,
                                                   value: "Double",
                                                 });
-                                              }
-                                              sendWebSocketMessage({
-                                                action: "double_player",
-                                                player_id: "player3",
-                                                hand_index: 0,
-                                              });
-                                              clearInsuranceForHand(
-                                                "player3",
-                                                0,
-                                                0
-                                              );
-                                            }}
-                                            className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
-                                          >
-                                            Double
-                                          </button>
-                                        )}
+                                                sendWebSocketMessage({
+                                                  action: "double_player",
+                                                  player_id: "player3",
+                                                  hand_index: 0,
+                                                });
+                                                clearInsuranceForHand(
+                                                  "player3",
+                                                  0,
+                                                  0
+                                                );
+                                              }}
+                                              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+                                            >
+                                              Double
+                                            </button>
+                                          )}
                                         <button
                                           onClick={() => {
-                                            if (gameState?.mode === "live") {
-                                              sendWebSocketMessage({
-                                                action:
-                                                  "set_live_function_hand",
-                                                player_id: "player3",
-                                                split_level: 0,
-                                                hand_index: 0,
-                                                value: "Stand",
-                                              });
-                                            }
+                                            sendWebSocketMessage({
+                                              action: "set_live_function_hand",
+                                              player_id: "player3",
+                                              split_level: 0,
+                                              hand_index: 0,
+                                              value: "Stand",
+                                            });
                                             sendWebSocketMessage({
                                               action: "next_turn",
                                               player_id: "player3",
@@ -1253,7 +1243,7 @@ const GameMenu = () => {
                                       0,
                                       1
                                     ) &&
-                                      gameState?.current_player === "player3",
+                                    gameState?.current_player === "player3",
                                     gameState.players.player3.status === 1,
                                     gameState.players.player3.split1[0]?.result
                                   )}`}
@@ -1281,7 +1271,7 @@ const GameMenu = () => {
                                       0,
                                       2
                                     ) &&
-                                      gameState?.current_player === "player3",
+                                    gameState?.current_player === "player3",
                                     gameState.players.player3.status === 1,
                                     gameState.players.player3.split2[0]?.result
                                   )}`}
@@ -1300,7 +1290,7 @@ const GameMenu = () => {
                           {/* Split1 Hand (auto mode: show if cards exist) */}
                           {gameState.mode !== "manual" &&
                             gameState.players.player3.split1[0]?.cards?.length >
-                              0 && (
+                            0 && (
                               <div className="mt-4">
                                 <div
                                   className={`rounded-xl p-4 relative ${getHandBoxColor(
@@ -1310,7 +1300,7 @@ const GameMenu = () => {
                                       0,
                                       1
                                     ) &&
-                                      gameState?.current_player === "player3",
+                                    gameState?.current_player === "player3",
                                     gameState.players.player3.status === 1,
                                     gameState.players.player3.split1[0]?.result
                                   )}`}
@@ -1321,6 +1311,16 @@ const GameMenu = () => {
                                     >
                                       Split Hand 1
                                     </div>
+                                    {gameState.players.player3.split1[0]?.live_function_hand &&
+                                      !["insurence", "surrender"].includes(
+                                        gameState.players.player3.split1[0].live_function_hand
+                                      ) && (
+                                        <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                                          <span className="text-5xl font-extrabold text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] animate-pulse tracking-widest bg-black/60 px-6 py-3 rounded-xl border-4 border-yellow-500 backdrop-blur-sm">
+                                            {gameState.players.player3.split1[0].live_function_hand.toUpperCase()}
+                                          </span>
+                                        </div>
+                                      )}
                                   </div>
 
                                   <div className="flex justify-center items-center gap-4 mb-4">
@@ -1348,8 +1348,8 @@ const GameMenu = () => {
                                         Math.max(
                                           0,
                                           2 -
-                                            (gameState.players.player3.split1[0]
-                                              .cards.length ?? 0)
+                                          (gameState.players.player3.split1[0]
+                                            .cards.length ?? 0)
                                         )
                                       ),
                                     ].map((_, index) => (
@@ -1389,19 +1389,18 @@ const GameMenu = () => {
                                       (gameState.players.player3
                                         .split1_status === 0 ||
                                         gameState.players.player3
-                                          .split2_status === 0) && (
+                                          .split2_status === 0) &&
+                                      !gameState.players.player3.split1[0]
+                                        ?.live_function_hand && (
                                         <button
                                           onClick={() => {
-                                            if (gameState?.mode === "live") {
-                                              sendWebSocketMessage({
-                                                action:
-                                                  "set_live_function_hand",
-                                                player_id: "player3",
-                                                split_level: 1,
-                                                hand_index: 0,
-                                                value: "Split",
-                                              });
-                                            }
+                                            sendWebSocketMessage({
+                                              action: "set_live_function_hand",
+                                              player_id: "player3",
+                                              split_level: 1,
+                                              hand_index: 0,
+                                              value: "Split",
+                                            });
                                             if (
                                               gameState?.mode === "auto" ||
                                               gameState?.mode === "manual"
@@ -1426,7 +1425,9 @@ const GameMenu = () => {
                                         1
                                       ) &&
                                       gameState?.current_player ===
-                                        "player3" && (
+                                      "player3" &&
+                                      !gameState.players.player3.split1[0]
+                                        ?.live_function_hand && (
                                         <>
                                           {gameState?.dealer
                                             ?.cards?.[0]?.[0] === "A" &&
@@ -1445,7 +1446,7 @@ const GameMenu = () => {
                                                 onClick={() => {
                                                   if (
                                                     gameState?.mode ===
-                                                      "auto" ||
+                                                    "auto" ||
                                                     gameState?.mode === "manual"
                                                   ) {
                                                     handleInsurance("player3");
@@ -1458,16 +1459,13 @@ const GameMenu = () => {
                                             )}
                                           <button
                                             onClick={() => {
-                                              if (gameState?.mode === "live") {
-                                                sendWebSocketMessage({
-                                                  action:
-                                                    "set_live_function_hand",
-                                                  player_id: "player3",
-                                                  split_level: 1,
-                                                  hand_index: 0,
-                                                  value: "Hit",
-                                                });
-                                              }
+                                              sendWebSocketMessage({
+                                                action: "set_live_function_hand",
+                                                player_id: "player3",
+                                                split_level: 1,
+                                                hand_index: 0,
+                                                value: "Hit",
+                                              });
                                               if (
                                                 gameState?.mode === "auto" ||
                                                 gameState?.mode === "manual"
@@ -1491,53 +1489,45 @@ const GameMenu = () => {
                                           {gameState?.players?.player3
                                             ?.split1?.[0]?.cards?.length ===
                                             2 && (
-                                            <button
-                                              onClick={() => {
-                                                if (
-                                                  gameState?.mode === "live"
-                                                ) {
+                                              <button
+                                                onClick={() => {
                                                   sendWebSocketMessage({
-                                                    action:
-                                                      "set_live_function_hand",
+                                                    action: "set_live_function_hand",
                                                     player_id: "player3",
                                                     split_level: 1,
                                                     hand_index: 0,
                                                     value: "Double",
                                                   });
-                                                }
-                                                if (
-                                                  gameState?.mode === "auto" ||
-                                                  gameState?.mode === "manual"
-                                                ) {
-                                                  sendWebSocketMessage({
-                                                    action: "double_player",
-                                                    player_id: "player3",
-                                                    hand_index: 0,
-                                                  });
-                                                  clearInsuranceForHand(
-                                                    "player3",
-                                                    0,
-                                                    1
-                                                  );
-                                                }
-                                              }}
-                                              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
-                                            >
-                                              Double
-                                            </button>
-                                          )}
+                                                  if (
+                                                    gameState?.mode === "auto" ||
+                                                    gameState?.mode === "manual"
+                                                  ) {
+                                                    sendWebSocketMessage({
+                                                      action: "double_player",
+                                                      player_id: "player3",
+                                                      hand_index: 0,
+                                                    });
+                                                    clearInsuranceForHand(
+                                                      "player3",
+                                                      0,
+                                                      1
+                                                    );
+                                                  }
+                                                }}
+                                                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+                                              >
+                                                Double
+                                              </button>
+                                            )}
                                           <button
                                             onClick={() => {
-                                              if (gameState?.mode === "live") {
-                                                sendWebSocketMessage({
-                                                  action:
-                                                    "set_live_function_hand",
-                                                  player_id: "player3",
-                                                  split_level: 1,
-                                                  hand_index: 0,
-                                                  value: "Stand",
-                                                });
-                                              }
+                                              sendWebSocketMessage({
+                                                action: "set_live_function_hand",
+                                                player_id: "player3",
+                                                split_level: 1,
+                                                hand_index: 0,
+                                                value: "Stand",
+                                              });
                                               if (
                                                 gameState?.mode === "auto" ||
                                                 gameState?.mode === "manual"
@@ -1558,49 +1548,7 @@ const GameMenu = () => {
                                           >
                                             Stand
                                           </button>
-                                          {/* Surrender Button for Split1 - Only show if hand has exactly 2 cards and dealer's upcard is not Ace */}
-                                          {gameState?.players?.player3
-                                            ?.split1?.[0]?.cards?.length ===
-                                            2 &&
-                                            gameState?.dealer
-                                              ?.cards?.[0]?.[0] !== "A" && (
-                                              <button
-                                                onClick={() => {
-                                                  if (
-                                                    gameState?.mode === "live"
-                                                  ) {
-                                                    sendWebSocketMessage({
-                                                      action:
-                                                        "set_live_function_hand",
-                                                      player_id: "player3",
-                                                      split_level: 1,
-                                                      hand_index: 0,
-                                                      value: "Surrender",
-                                                    });
-                                                  }
-                                                  if (
-                                                    gameState?.mode ===
-                                                      "auto" ||
-                                                    gameState?.mode === "manual"
-                                                  ) {
-                                                    sendWebSocketMessage({
-                                                      action:
-                                                        "surrender_player",
-                                                      player_id: "player3",
-                                                      hand_index: 0,
-                                                    });
-                                                    clearInsuranceForHand(
-                                                      "player3",
-                                                      0,
-                                                      1
-                                                    );
-                                                  }
-                                                }}
-                                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                              >
-                                                Surrender
-                                              </button>
-                                            )}
+
                                         </>
                                       )}
                                   </div>
@@ -1611,7 +1559,7 @@ const GameMenu = () => {
                           {/* Split2 Hand (auto mode: show if cards exist) */}
                           {gameState.mode !== "manual" &&
                             gameState.players.player3.split2[0]?.cards?.length >
-                              0 && (
+                            0 && (
                               <div className="mt-4">
                                 <div
                                   className={`rounded-xl p-4 relative ${getHandBoxColor(
@@ -1621,7 +1569,7 @@ const GameMenu = () => {
                                       0,
                                       2
                                     ) &&
-                                      gameState?.current_player === "player3",
+                                    gameState?.current_player === "player3",
                                     gameState.players.player3.status === 1,
                                     gameState.players.player3.split2[0]?.result
                                   )}`}
@@ -1632,6 +1580,16 @@ const GameMenu = () => {
                                     >
                                       Split Hand 2
                                     </div>
+                                    {gameState.players.player3.split2[0]?.live_function_hand &&
+                                      !["insurence", "surrender"].includes(
+                                        gameState.players.player3.split2[0].live_function_hand
+                                      ) && (
+                                        <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
+                                          <span className="text-5xl font-extrabold text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] animate-pulse tracking-widest bg-black/60 px-6 py-3 rounded-xl border-4 border-yellow-500 backdrop-blur-sm">
+                                            {gameState.players.player3.split2[0].live_function_hand.toUpperCase()}
+                                          </span>
+                                        </div>
+                                      )}
                                   </div>
 
                                   <div className="flex justify-center items-center gap-4 mb-4">
@@ -1659,8 +1617,8 @@ const GameMenu = () => {
                                         Math.max(
                                           0,
                                           2 -
-                                            (gameState.players.player3.split2[0]
-                                              .cards.length ?? 0)
+                                          (gameState.players.player3.split2[0]
+                                            .cards.length ?? 0)
                                         )
                                       ),
                                     ].map((_, index) => (
@@ -1700,19 +1658,18 @@ const GameMenu = () => {
                                       (gameState.players.player3
                                         .split1_status === 0 ||
                                         gameState.players.player3
-                                          .split2_status === 0) && (
+                                          .split2_status === 0) &&
+                                      !gameState.players.player3.split2[0]
+                                        ?.live_function_hand && (
                                         <button
                                           onClick={() => {
-                                            if (gameState?.mode === "live") {
-                                              sendWebSocketMessage({
-                                                action:
-                                                  "set_live_function_hand",
-                                                player_id: "player3",
-                                                split_level: 2,
-                                                hand_index: 0,
-                                                value: "Split",
-                                              });
-                                            }
+                                            sendWebSocketMessage({
+                                              action: "set_live_function_hand",
+                                              player_id: "player3",
+                                              split_level: 2,
+                                              hand_index: 0,
+                                              value: "Split",
+                                            });
                                             if (
                                               gameState?.mode === "auto" ||
                                               gameState?.mode === "manual"
@@ -1737,7 +1694,9 @@ const GameMenu = () => {
                                         2
                                       ) &&
                                       gameState?.current_player ===
-                                        "player3" && (
+                                      "player3" &&
+                                      !gameState.players.player3.split2[0]
+                                        ?.live_function_hand && (
                                         <>
                                           {gameState?.dealer
                                             ?.cards?.[0]?.[0] === "A" &&
@@ -1756,7 +1715,7 @@ const GameMenu = () => {
                                                 onClick={() => {
                                                   if (
                                                     gameState?.mode ===
-                                                      "auto" ||
+                                                    "auto" ||
                                                     gameState?.mode === "manual"
                                                   ) {
                                                     handleInsurance("player3");
@@ -1769,16 +1728,13 @@ const GameMenu = () => {
                                             )}
                                           <button
                                             onClick={() => {
-                                              if (gameState?.mode === "live") {
-                                                sendWebSocketMessage({
-                                                  action:
-                                                    "set_live_function_hand",
-                                                  player_id: "player3",
-                                                  split_level: 2,
-                                                  hand_index: 0,
-                                                  value: "Hit",
-                                                });
-                                              }
+                                              sendWebSocketMessage({
+                                                action: "set_live_function_hand",
+                                                player_id: "player3",
+                                                split_level: 2,
+                                                hand_index: 0,
+                                                value: "Hit",
+                                              });
                                               if (
                                                 gameState?.mode === "auto" ||
                                                 gameState?.mode === "manual"
@@ -1802,53 +1758,45 @@ const GameMenu = () => {
                                           {gameState?.players?.player3
                                             ?.split2?.[0]?.cards?.length ===
                                             2 && (
-                                            <button
-                                              onClick={() => {
-                                                if (
-                                                  gameState?.mode === "live"
-                                                ) {
+                                              <button
+                                                onClick={() => {
                                                   sendWebSocketMessage({
-                                                    action:
-                                                      "set_live_function_hand",
+                                                    action: "set_live_function_hand",
                                                     player_id: "player3",
                                                     split_level: 2,
                                                     hand_index: 0,
                                                     value: "Double",
                                                   });
-                                                }
-                                                if (
-                                                  gameState?.mode === "auto" ||
-                                                  gameState?.mode === "manual"
-                                                ) {
-                                                  sendWebSocketMessage({
-                                                    action: "double_player",
-                                                    player_id: "player3",
-                                                    hand_index: 0,
-                                                  });
-                                                  clearInsuranceForHand(
-                                                    "player3",
-                                                    0,
-                                                    2
-                                                  );
-                                                }
-                                              }}
-                                              className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
-                                            >
-                                              Double
-                                            </button>
-                                          )}
+                                                  if (
+                                                    gameState?.mode === "auto" ||
+                                                    gameState?.mode === "manual"
+                                                  ) {
+                                                    sendWebSocketMessage({
+                                                      action: "double_player",
+                                                      player_id: "player3",
+                                                      hand_index: 0,
+                                                    });
+                                                    clearInsuranceForHand(
+                                                      "player3",
+                                                      0,
+                                                      2
+                                                    );
+                                                  }
+                                                }}
+                                                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600 transition-colors"
+                                              >
+                                                Double
+                                              </button>
+                                            )}
                                           <button
                                             onClick={() => {
-                                              if (gameState?.mode === "live") {
-                                                sendWebSocketMessage({
-                                                  action:
-                                                    "set_live_function_hand",
-                                                  player_id: "player3",
-                                                  split_level: 2,
-                                                  hand_index: 0,
-                                                  value: "Stand",
-                                                });
-                                              }
+                                              sendWebSocketMessage({
+                                                action: "set_live_function_hand",
+                                                player_id: "player3",
+                                                split_level: 2,
+                                                hand_index: 0,
+                                                value: "Stand",
+                                              });
                                               if (
                                                 gameState?.mode === "auto" ||
                                                 gameState?.mode === "manual"
@@ -1869,49 +1817,7 @@ const GameMenu = () => {
                                           >
                                             Stand
                                           </button>
-                                          {/* Surrender Button for Split2 - Only show if hand has exactly 2 cards and dealer's upcard is not Ace */}
-                                          {gameState?.players?.player3
-                                            ?.split2?.[0]?.cards?.length ===
-                                            2 &&
-                                            gameState?.dealer
-                                              ?.cards?.[0]?.[0] !== "A" && (
-                                              <button
-                                                onClick={() => {
-                                                  if (
-                                                    gameState?.mode === "live"
-                                                  ) {
-                                                    sendWebSocketMessage({
-                                                      action:
-                                                        "set_live_function_hand",
-                                                      player_id: "player3",
-                                                      split_level: 2,
-                                                      hand_index: 0,
-                                                      value: "Surrender",
-                                                    });
-                                                  }
-                                                  if (
-                                                    gameState?.mode ===
-                                                      "auto" ||
-                                                    gameState?.mode === "manual"
-                                                  ) {
-                                                    sendWebSocketMessage({
-                                                      action:
-                                                        "surrender_player",
-                                                      player_id: "player3",
-                                                      hand_index: 0,
-                                                    });
-                                                    clearInsuranceForHand(
-                                                      "player3",
-                                                      0,
-                                                      2
-                                                    );
-                                                  }
-                                                }}
-                                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                                              >
-                                                Surrender
-                                              </button>
-                                            )}
+
                                         </>
                                       )}
                                   </div>
@@ -2070,11 +1976,19 @@ const GameMenu = () => {
                                 {hand.label}
                               </span>
                             </div>
-                            <span
-                              className={`font-bold text-xl ${display.color} drop-shadow-md`}
-                            >
-                              {display.text}
-                            </span>
+                            <div className="flex items-center gap-2">
+                              {/* Insurance Badge - Only for Main Hand if insurance taken */}
+                              {i === 0 && player3Data.insurence === 1 && (
+                                <span className="px-2 py-0.5 bg-yellow-500/80 text-black text-xs font-bold rounded border border-yellow-400 uppercase tracking-wider">
+                                  INSURED
+                                </span>
+                              )}
+                              <span
+                                className={`font-bold text-xl ${display.color} drop-shadow-md`}
+                              >
+                                {display.text}
+                              </span>
+                            </div>
                           </div>
                         );
                       });
@@ -2162,8 +2076,9 @@ const GameMenu = () => {
             Your browser does not support the video tag.
           </video>
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

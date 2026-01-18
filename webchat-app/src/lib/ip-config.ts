@@ -18,7 +18,7 @@ export async function getServerIp(): Promise<string> {
   } catch (error) {
     console.error('Error fetching IP from API:', error);
     // Fallback to target PC IP (update this to the deployment machine's IP)
-    return '169.254.11.80';
+    return '192.168.10.2';
   }
 }
 

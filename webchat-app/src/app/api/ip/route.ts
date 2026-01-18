@@ -18,7 +18,7 @@ export async function GET() {
   } catch (error) {
     // Fallback to target PC IP if file not found
     console.error('Error reading ip.txt:', error);
-    return NextResponse.json({ ip: '169.254.11.80' }, { status: 200 });
+    return NextResponse.json({ ip: '192.168.10.2' }, { status: 200 });
   }
 }
 

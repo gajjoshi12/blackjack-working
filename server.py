@@ -13,7 +13,7 @@ import re
 import serial
 from ip_config import get_ip_address, get_websocket_url
 # Serial port configuration for shoe reader
-SERIAL_PORT = "COM3"  # Adjust this to match your serial port
+SERIAL_PORT = "COM1"  # Adjust this to match your serial port
 BAUD_RATE = 9600
 ser = None
 
@@ -29,11 +29,11 @@ connected_clients = set()
 previous_game_states = []
 
 # Serial port setup (adjust as needed)
-ser = None
-try:
-    ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)  # Use consistent SERIAL_PORT
-except Exception as e:
-    print(f"Serial port not available: {e}")
+# ser = None
+# try:
+#     ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)  # Use consistent SERIAL_PORT
+# except Exception as e:
+#     print(f"Serial port not available: {e}")
 
 def log_function_call(func_name, *args, **kwargs):
     """Helper function to log function calls with timestamp"""
@@ -1057,8 +1057,9 @@ async def handle_hit_player(player_id, hand_index=0, card=None):
             except Exception as _e:
                 print(f"[WARN] all_players_bust_or_surrender check failed: {_e}")
 
-            # Check if mode is live and round_number is 1, and live_function_hand was "Hit"
-            if game_state["mode"] == "live" and game_state["round_number"] == 1:
+            # Check if live_function_hand was "Hit" and clear it (so buttons reappear)
+            # This applies to all modes now to support visual feedback
+            if True:
                 # Get the current live_function_hand value before it was reset
                 current_live_function_hand = ""
               
@@ -2148,10 +2149,11 @@ async def handle_distribute_cards_auto():
         await handle_next_turn()
         await asyncio.sleep(0.4)
         
-        # Second round: Give 2nd card to each active player
+        # Second round: Give 2nd card to each active player (one by one with delay)
         for player_id, player_data in game_state["players"].items():
             if player_data["status"] == 1:
                 await handle_hit_player(player_id, 0)
+                await asyncio.sleep(0.4)
         await handle_next_turn()
         await asyncio.sleep(0.4)
 
@@ -2384,6 +2386,10 @@ async def handle_insurence(player_id, hand_index=0, split_level=0):
         return
     
     game_state["players"][player_id]["insurence"] = 1
+    
+    # Clear live_function_hand so buttons reappear
+    game_state["players"][player_id]["hands"][0]["live_function_hand"] = ""
+
     await broadcast({
         "action": "insurance_taken",
         "player_id": player_id,
@@ -2588,7 +2594,7 @@ async def main():
     # Initialize serial port for shoe reader
     global ser
     try:
-        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.5)
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.1)
         print(f"Connected to shoe reader on {SERIAL_PORT}")
         # Start the serial reader as a background task
         serial_task = asyncio.create_task(read_from_serial())
